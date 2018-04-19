@@ -11,10 +11,6 @@ ClassMethod GetRequestId(connection As %SYS.MFT.Connection.Yandex, itemInfo As %
 
 /// Return the item info object which describes the specified folder.
 /// path may be a folder path.
-/// path may also be specified as an id of the form "id:<id>" which was obtained from a %MFT.ItemInfo object.
-/// "" May be used as the path to specify the current folder.
-/// If a folder does not exist at the specified path, then $$$OK is returned as status and itemInfo is returned as "".<br>
-/// This method requires a connection based on a Dropbox User application with Full Dropbox permission.
 ClassMethod GetFolderInfo(connection As %SYS.MFT.Connection.Yandex, path As %String, Output itemInfo As %MFT.ItemInfo) As %Status
 {
 	Try {
@@ -44,8 +40,6 @@ ClassMethod GetFolderInfo(connection As %SYS.MFT.Connection.Yandex, path As %Str
 /// Return the item info object which describes the specified file or folder.
 /// "" May be used as the itemPath to specify the current folder.<br>
 /// If an item does not exist at the specified path, then $$$OK is returned as status and itemInfo is returned as "".<br>
-/// %MFT.Dropbox only supports the file's owner getting information about a file.<br>
-/// This method requires a connection based on a Dropbox User application with Full Dropbox permission.
 ClassMethod GetItemInfo(connection As %SYS.MFT.Connection.Yandex, itemPath As %String, Output itemInfo As %MFT.ItemInfo) As %Status [ Internal ]
 {
 	Set sc=$$$OK
@@ -112,9 +106,7 @@ ClassMethod CreateItemInfo(response As %DynamicObject) As %MFT.ItemInfo [ Intern
 
 /// Return the item info object which describes the specified file.
 /// path may be a file path.
-/// path may also be specified as an id of the form "id:<id>" which was obtained from a %MFT.ItemInfo object.
-/// If a file does not exist at the specified path, then $$$OK is returned as status and itemInfo is returned as "".<br>
-/// This method requires a connection based on a Dropbox User application with Full Dropbox permission.
+/// If a file does not exist at the specified path, then $$$OK is returned as status and itemInfo is returned as "".
 ClassMethod GetFileInfo(connection As %SYS.MFT.Connection.Yandex, path As %String, Output itemInfo As %MFT.ItemInfo) As %Status
 {
 	Try {
@@ -136,7 +128,7 @@ ClassMethod GetFileInfo(connection As %SYS.MFT.Connection.Yandex, path As %Strin
 	}
 
 	If $$$ISERR(sc) {
-		Do ##class(%OAuth2.Utils).LogError("[%MFT.Dropbox:GetFileInfo]","MFT",sc)
+		Do ##class(%OAuth2.Utils).LogError("[%MFT.Yandex:GetFileInfo]","MFT",sc)
 	}
 	Quit sc
 }
@@ -144,7 +136,6 @@ ClassMethod GetFileInfo(connection As %SYS.MFT.Connection.Yandex, path As %Strin
 /// Creates the remote folder at the specified folderPath.
 /// Each level of the folder path should be created separately if it does not already exist.
 /// An %MFT.ItemInfo object is returned for the new folder.<br>
-/// This method requires a connection based on a Dropbox User application with Full Dropbox permission.
 ClassMethod CreateFolder(connection As %SYS.MFT.Connection.Yandex, folderPath As %String, Output itemInfo As %MFT.ItemInfo) As %Status
 {
 	Try {
@@ -229,13 +220,11 @@ ClassMethod DeleteFile(connection As %SYS.MFT.Connection.Yandex, path As %String
 	Quit sc
 }
 
-/// Get the external username that corresponds to the specified internal user id.
-/// This call only works for files, since Dropbox does not return id of the last user that modified.<br>
-/// This method requires a connection based on a Dropbox User application with Full Dropbox permission.
+/// Get current user name
 ClassMethod GetUsername(connection As %SYS.MFT.Connection.Yandex, internalId As %String, Output username As %String) As %Status
 {
 	Try {
-		$$$SysLog(2,"MFT","[%MFT.Dropbox:GetUsername]","internalId="_internalId)
+		$$$SysLog(2,"MFT","[%MFT.Yandex:GetUsername]","internalId="_internalId)
 		Set username=""
 
 		// Validate the connection
@@ -252,7 +241,7 @@ ClassMethod GetUsername(connection As %SYS.MFT.Connection.Yandex, internalId As 
 	}
 
 	If $$$ISERR(sc) {
-		Do ##class(%OAuth2.Utils).LogError("[%MFT.Dropbox:GetUsername]","MFT",sc)
+		Do ##class(%OAuth2.Utils).LogError("[%MFT.Yandex:GetUsername]","MFT",sc)
 	}
 	Quit sc
 }
@@ -263,7 +252,7 @@ ClassMethod GetUsername(connection As %SYS.MFT.Connection.Yandex, internalId As 
 ClassMethod ShareFolder(connection As %SYS.MFT.Connection.Yandex, path As %String, accessLevel As %String = "viewer", users As %List) As %Status
 {
 	Try {
-		$$$SysLog(2,"MFT","[%MFT.Dropbox:ShareFolder]","path="_path_", accessLevel="_accessLevel_", users="_$listtostring(users))
+		$$$SysLog(2,"MFT","[%MFT.Yandex:ShareFolder]","path="_path_", accessLevel="_accessLevel_", users="_$listtostring(users))
 		
 		// Validate the connection
 		If connection.Service'=$piece($classname(),".",*) {
@@ -278,7 +267,7 @@ ClassMethod ShareFolder(connection As %SYS.MFT.Connection.Yandex, path As %Strin
 	}
 
 	If $$$ISERR(sc) {
-		Do ##class(%OAuth2.Utils).LogError("[%MFT.Dropbox:ShareFolder]","MFT",sc)
+		Do ##class(%OAuth2.Utils).LogError("[%MFT.Yandex:ShareFolder]","MFT",sc)
 	}
 	Quit sc
 }
@@ -296,7 +285,7 @@ ClassMethod UnshareFolder(connection As %SYS.MFT.Connection.Yandex, path As %Str
 ClassMethod UnshareFolderAll(connection As %SYS.MFT.Connection.Yandex, path As %String) As %Status
 {
 	Try {
-		$$$SysLog(2,"MFT","[%MFT.Dropbox:ShareFolder]","path="_path_", accessLevel="_accessLevel_", users="_$listtostring(users))
+		$$$SysLog(2,"MFT","[%MFT.Yandex:ShareFolder]","path="_path_", accessLevel="_accessLevel_", users="_$listtostring(users))
 		
 		// Validate the connection
 		If connection.Service'=$piece($classname(),".",*) {
@@ -311,7 +300,7 @@ ClassMethod UnshareFolderAll(connection As %SYS.MFT.Connection.Yandex, path As %
 	}
 
 	If $$$ISERR(sc) {
-		Do ##class(%OAuth2.Utils).LogError("[%MFT.Dropbox:ShareFolder]","MFT",sc)
+		Do ##class(%OAuth2.Utils).LogError("[%MFT.Yandex:ShareFolder]","MFT",sc)
 	}
 	Quit sc
 }
@@ -380,8 +369,6 @@ ClassMethod UploadStream(connection As %SYS.MFT.Connection.Yandex, stream As %Bi
 
 /// Download the specified remote file and store at the location given by localFilePath.
 /// filePath may be a file path.
-/// filePath may also be specified as an id of the form "id:<id>" which was obtained from a %MFT.ItemInfo object.<br>
-/// This method requires a connection based on a Dropbox User application with Full Dropbox permission.
 ClassMethod DownloadFile(connection As %SYS.MFT.Connection.Yandex, filePath As %String, localFilePath As %String) As %Status
 {
 	Set stream=##class(%FileBinaryStream).%New()
@@ -392,8 +379,6 @@ ClassMethod DownloadFile(connection As %SYS.MFT.Connection.Yandex, filePath As %
 /// Download the specified remote file and store in the specified stream which must be a %FileBinaryStream or a %GlobalBinaryStream.
 /// If stream is not specified, then a %GlobalBinaryStream will be created.
 /// filePath may be a file path.
-/// filePath may also be specified as an id of the form "id:<id>" which was obtained from a %MFT.ItemInfo object.<br>
-/// This method requires a connection based on a Dropbox User application with Full Dropbox permission.
 ClassMethod DownloadStream(connection As %SYS.MFT.Connection.Yandex, filePath As %String, ByRef stream As %BinaryStream) As %Status
 {
 	Try {
@@ -433,7 +418,7 @@ ClassMethod DownloadStream(connection As %SYS.MFT.Connection.Yandex, filePath As
 	}
 
 	If $$$ISERR(sc) {
-		Do ##class(%OAuth2.Utils).LogError("[%MFT.Dropbox:Download]","MFT",sc)
+		Do ##class(%OAuth2.Utils).LogError("[%MFT.Yandex:Download]","MFT",sc)
 	}
 	Quit sc
 }
@@ -508,19 +493,14 @@ ClassMethod GetFolderContentsInternal(connection As %SYS.MFT.Connection.Yandex, 
 	Quit sc
 }
 
-/// Retrieve the %MFT.UserInfo specified by the username
-/// which is the email address for all currently supported services.
-/// GetUser is potentially less efficient than GetUserById.
-/// If the user does not exist, then $$$OK is returned as status and userInfo is returned as "".<br>
-/// This method requires a connection based on a Dropbox Business application with Team Memeber Management permission.
+/// Retrieve the %MFT.UserInfo for current user
 ClassMethod GetUser(connection As %SYS.MFT.Connection.Yandex, username As %String, Output userInfo As %MFT.UserInfo) As %Status
 {
 	Try {
-		$$$SysLog(2,"MFT","[%MFT.Dropbox:GetUser]","username="_username)
+		$$$SysLog(2,"MFT","[%MFT.Yandex:GetUser]","username="_username)
 		
 		Set userInfo = ""
 		// Validate the connection
-		//  || (username'=connection.Username)
 		If (connection.Service'=$piece($classname(),".",*)) {
 			Set sc=$$$ERROR($$$MFTBadConnection)
 			Quit
@@ -541,7 +521,7 @@ ClassMethod GetUser(connection As %SYS.MFT.Connection.Yandex, username As %Strin
 	}
 
 	If $$$ISERR(sc) {
-		Do ##class(%OAuth2.Utils).LogError("[%MFT.Dropbox:GetUser]","MFT",sc)
+		Do ##class(%OAuth2.Utils).LogError("[%MFT.Yandex:GetUser]","MFT",sc)
 	}
 	Quit sc
 }

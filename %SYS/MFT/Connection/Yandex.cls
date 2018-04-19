@@ -7,25 +7,26 @@ ClassMethod DefaultURL() As %String
 	Quit "https://cloud-api.yandex.net:443/v1/"
 }
 
-/// The URL for uploading and downloading files.
-Method ContentURL() As %String
+/// Internal method to normalize the a file or folder path.
+Method NormalizePath(path As %String) As %String [ Internal ]
 {
-	Quit ..DefaultURL()
-	/*If ..URL="" {
-		Quit "https://content.dropboxapi.com/2/"
+	If $e(path, 1, 5) = "disk:" {
+		Set normalized = ##super($e(path, 6, *))
+		Set normalized = "disk:" _ normalized
 	} Else {
-		Quit $replace(..URL,"//api.","//content.")
-	}*/
+		Set normalized = ##super(path)
+	}
+	Quit normalized
 }
 
-/// Create an OAuth 2.0 client with the parameters required to authorize with Dropbox.<br>
+/// Create an OAuth 2.0 client with the parameters required to authorize with Yandex.<br>
 /// name is the name to be given to the OAuth 2.0 client.<br>
 /// sslConfiguration is the SSLConfiguration used to make the HTTP request.<br>
 /// clientId and ClientSecret are the id and secret for the OAuth 2.0 client which is obtained from
-/// the Dropbox App definition.<br>
-/// If addiitonal properties are needed, then the Dropbox OAuth 2.0 client may be opened and modified.<br>
-/// If a server definition does not yet exist for Dropbox, then a new server definition is created.
-ClassMethod CreateClient(name As %String, sslConfiguration As %String, clientId As %String, clientSecret As %String, issuer As %String = "https://api.dropboxapi.com", host As %String = "localhost", port As %Integer = "", prefix As %String = "", useSSL As %Boolean = 1) As %Status
+/// the Yandex App definition.<br>
+/// If addiitonal properties are needed, then the Yandex OAuth 2.0 client may be opened and modified.<br>
+/// If a server definition does not yet exist for Yandex, then a new server definition is created.
+ClassMethod CreateClient(name As %String, sslConfiguration As %String, clientId As %String, clientSecret As %String, issuer As %String = "https://cloud-api.yandex.net:443", host As %String = "localhost", port As %Integer = "", prefix As %String = "", useSSL As %Boolean = 1) As %Status
 {
 	If '$SYSTEM.Security.Check($$$AdminSecureResourceName,$$$PermUseName) {
 		Set sc=$$$ERROR($$$OperationRequires,$$$AdminSecureResourceName_":"_$$$PermUseName)
@@ -34,7 +35,7 @@ ClassMethod CreateClient(name As %String, sslConfiguration As %String, clientId 
 	$$$AddAllRoleTemporary
 	
 	New $namespace
-	Set $namespace="%sys"
+	Set $namespace="%SYS"
 	
 	Do ##class(OAuth2.Client).DeleteId(name)
 	Set client=##class(OAuth2.Client).%New()
@@ -120,7 +121,6 @@ Method MakeRequest(location As %String, method As %String = "GET", ByRef paramet
 			Do httpRequest.SetParam(param, value)
 		}
 		
-		
 		Set sc=..MakeHttpRequest(httpRequest, method, ..URL _ location, $$$YES)	
 		
 		Quit:$$$ISERR(sc) 
@@ -129,9 +129,6 @@ Method MakeRequest(location As %String, method As %String = "GET", ByRef paramet
 		#Dim json As %Stream.FileCharacterGzip
 		
 		Set json=httpRequest.HttpResponse.Data
-		//zw json
-		//Set json.TranslateTable = "RAW"
-		//Set json=$zconvert(httpRequest.HttpResponse.Data,"O","UTF8")
 		Set sc=..ProcessResponse(httpRequest,json,.response)
 		
 	} Catch ex {
