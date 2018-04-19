@@ -89,104 +89,204 @@ Method RevokeToken() As %Status
 	Quit sc
 }
 
-/// Make an RPC style http request to Dropbox API
-Method MakeRPCRequest(parameters As %String, request As %DynamicObject, Output response As %DynamicObject) As %Status
+/// Make an REST https request to Yandex API
+Method MakeRequest(location As %String, method As %String = "GET", ByRef parameters As %String, Output response As %DynamicObject) As %Status
 {
 	Try {
+		#dim httpRequest As %Net.HttpRequest
 		// Get a %Net.HttpRequest object if one is not yet associated with the connection.
 		If '$isobject(..HttpRequest) {
 			Set ..HttpRequest=##class(%Net.HttpRequest).%New()
 		}
 		Set httpRequest=..HttpRequest
 		
+		
 		// Make sure to UTF-8 encode the JSON object
-		Set httpRequest.ContentType="application/json;charset=UTF-8"
-		Set sc=httpRequest.EntityBody.Write(request.%ToJSON())
-		If $$$ISERR(sc) Quit
+		Set httpRequest.ContentType="application/json"
 
 		// Make the request
-		Set httpRequest.ResponseStream="string"
+		/// !!!!
+		Set httpRequest.ResponseStream = ##class(%Stream.TmpCharacter).%New()
 		Do httpRequest.EntityBody.Rewind()
-		If ..URL="" Set ..URL=..DefaultURL()
-		Set sc=..MakeHttpRequest(httpRequest,"POST",..URL_parameters)
-		If $$$ISERR(sc) Quit
+		Set:..URL="" ..URL=..DefaultURL()
+
+		Set httpRequest.SSLConfiguration = ..SSLConfiguration
 		
-		Set sc=..GetJSONResponse(httpRequest,httpRequest.HttpResponse.Data,.response)
+		
+		Set param = ""
+		For {
+			Set param=$order(parameters(param),1, value) 
+			Quit:param=""
+			Do httpRequest.SetParam(param, value)
+		}
+		
+		
+		Set sc=..MakeHttpRequest(httpRequest, method, ..URL _ location, $$$YES)	
+		
+		Quit:$$$ISERR(sc) 
+		
+		/// Workaround for UTF8 conversion in GetJSONResponse
+		#Dim json As %Stream.FileCharacterGzip
+		
+		Set json=httpRequest.HttpResponse.Data
+		//zw json
+		//Set json.TranslateTable = "RAW"
+		//Set json=$zconvert(httpRequest.HttpResponse.Data,"O","UTF8")
+		Set sc=..ProcessResponse(httpRequest,json,.response)
 		
 	} Catch ex {
 		Set sc=ex.AsStatus()
 	}
 	
 	If $$$ISERR(sc) {
-		Do ##class(%OAuth2.Utils).LogError("[%SYS.MFT.Connection.Yandex:MakeRPCRequest]","MFT",sc)
+		Do ##class(%OAuth2.Utils).LogError("[%SYS.MFT.Connection.Yandex:MakeRequest]","MFT",sc)
 	}
+	Quit sc
+}
+
+/// Make an REST https request to Yandex API
+Method MakeDownloadRequest(location As %String, ByRef stream As %Stream.Object) As %Status
+{
+	Try {
+		Set:'$isObject($g(stream)) stream=##class(%GlobalBinaryStream).%New()
+		Set httpRequest=##class(%Net.HttpRequest).%New()
+		Set httpRequest.Https=$$$YES
+		Set httpRequest.SSLConfiguration=..SSLConfiguration
+		Set httpRequest.ResponseStream=stream
+		Set sc=httpRequest.Get(location)	
+	} Catch ex {
+		Set sc=ex.AsStatus()
+	}
+	
+	If $$$ISERR(sc) {
+		Do ##class(%OAuth2.Utils).LogError("[%SYS.MFT.Connection.Yandex:MakeDownloadRequest]","MFT",sc)
+	}
+	Quit sc
+}
+
+/// MakeHttpRequest will add authentication to the specified %Net.HttpRequest object and
+/// execute the request using the specified method with the specified REST parameters added to the URL.
+/// After the request is made, the authentication information is removed to avoid making this available to user code.
+Method MakeHttpRequest(httpRequest As %Net.HttpRequest, method As %String = "GET", url As %String, reset As %Boolean = 1) As %Status
+{
+	Try {
+		// Get a %Net.HttpRequest object if one is not yet associated with the connection.
+		If '$isobject($get(httpRequest)) {
+			Set httpRequest=##class(%Net.HttpRequest).%New()
+		}
+		
+		// Add authorization as a bearer token
+		Set sc=..AddAccessToken(httpRequest,,..SSLConfiguration,..ApplicationName,..ConnectionId)
+		If $$$ISERR(sc) Quit
+		
+		// Log the request that we are making
+		If $$$SysLogLevel>=2 {
+			Do ##class(%OAuth2.Utils).LogHTTPRequest("[%SYS.MFT.Connection.Yandex:MakeHttpRequest]","MFT",
+				httpRequest,method,url,,2)
+		}
+	
+		// Make the REST request.
+		Set sc=httpRequest.Send(method,url,,reset)
+		
+		If $$$ISOK(sc) {
+			// Log the response
+			If $$$SysLogLevel>=2 {
+				Do ##class(%OAuth2.Utils).LogHTTPResponse("[%SYS.MFT.Connection.Yandex:MakeHttpRequest]","MFT",httpRequest,2)
+			}
+			// Treat no HTTP status code as an error
+			If httpRequest.HttpResponse.StatusCode="" {
+				Set sc=$$$ERROR($$$MFTErrorResponse,"response has null HTTP status code")
+			}
+		}
+		
+		// Remove the access token from the %Net.HttpRequest object authorization header.
+		Set sc1=##class(%SYS.OAuth2.AccessToken).RemoveAuthorizationAccessToken(httpRequest)
+		Set sc=$system.Status.AppendStatus(sc,sc1)
+		
+	} Catch ex {
+		Set sc=ex.AsStatus()
+	}
+	
+	If $$$ISERR(sc) {
+		Do ##class(%OAuth2.Utils).LogError("[%SYS.MFT.Connection.Yandex:MakeHttpRequest]","MFT",sc)
+	}
+	Quit sc
+}
+
+/// AddAccessToken adds the bearer access token associated with applicationName and sessionId
+/// to the resource server request as defined by RFC 6750.
+/// The sslConfiguration that is specified for the client is added to the httpRequest object.
+/// This method is used to prepare requests from the Client to the Resource Server.
+/// The type argument specifies one of three ways defined by RFC 6750 to send the access token to the Resource Server:<br>
+/// 	"header" to use Bearer token HTTP header.<br>
+/// 	"body" to use form encoded body.  In this case, request must be a POST with form encoded body.<br>
+/// 	"query" to use a query parameter.<br>
+/// The sslConfiguration is the name of the Security.SSLConfigs object to use for this request.
+/// The default for sslConfiguration comes from the OAuth2.Client instance.
+ClassMethod AddAccessToken(httpRequest As %Net.HttpRequest, type As %String = "header", sslConfiguration As %String, applicationName As %String, sessionId As %String) As %Status
+{
+	Set sc=$$$OK
+	$$$AddAllRoleTemporary
+	New $namespace
+	Set $namespace="%SYS"
+	
+	Try {
+		Do ##class(%OAuth2.Utils).GetDefaultSessionId(.sessionId)
+
+		If '##class(%SYS.OAuth2.AccessToken).GetAccessToken(applicationName,sessionId,,.accessToken) {
+			Set sc=$$$ERROR($$$OAuth2NoAccessToken)
+			Quit
+		}
+		
+		$$$SysLog(3,"OAuth2","[%SYS.MFT.Connection.Yandex:AddAccessToken]","applicationName="_applicationName_", sessionId="_sessionId)
+
+		Do httpRequest.SetHeader("Authorization","OAuth "_accessToken)		
+	} Catch ex {
+		Set sc=ex.AsStatus()
+	}
+
+	If $$$ISERR(sc) Do ##class(%OAuth2.Utils).LogError("[%SYS.OAuth2.AccessToken:AddAccessToken]",0,sc)
 	Quit sc
 }
 
 /// TODO
 /// Make an Upload style http request to Dropbox API
-Method MakeUploadRequest(parameters As %String, request As %DynamicObject, body As %BinaryStream, Output response As %DynamicObject) As %Status
+Method MakeUploadRequest(location As %String, stream As %Stream.Object) As %Status
 {
 	Try {
-		// Get a %Net.HttpRequest object if one is not yet associated with the connection.
-		If '$isobject(..HttpRequest) {
-			Set ..HttpRequest=##class(%Net.HttpRequest).%New()
-		}
-		Set httpRequest=..HttpRequest
-		
-		// Make sure to UTF-8 encode the JSON object
-		Do httpRequest.SetHeader("Dropbox-API-Arg",request.%ToJSON())
-
-		// Make the request
-		Set httpRequest.EntityBody=body
-		Do httpRequest.SetHeader("Content-Type","application/octet-stream")
-		Set sc=..MakeHttpRequest(httpRequest,"POST",..ContentURL()_parameters)
-		If $$$ISERR(sc) Quit
-		
-		// Process the response object
-		Set sc=..GetJSONResponse(httpRequest,httpRequest.HttpResponse.Data,.response)
-		If $$$ISERR(sc) Quit
-		
+		Set httpRequest=##class(%Net.HttpRequest).%New()
+		Set httpRequest.Https=$$$YES
+		Set httpRequest.SSLConfiguration=..SSLConfiguration
+		Set httpRequest.EntityBody = stream
+		Set httpRequest.ContentType = "text/plain"
+		Set httpRequest.NoDefaultContentCharset = $$$YES
+		Set sc=httpRequest.Put(location)	
 	} Catch ex {
 		Set sc=ex.AsStatus()
 	}
 	
 	If $$$ISERR(sc) {
-		Do ##class(%OAuth2.Utils).LogError("[%SYS.MFT.Connection.Download:MakeUploadRequest]","MFT",sc)
+		Do ##class(%OAuth2.Utils).LogError("[%SYS.MFT.Connection.Yandex:MakeDownloadRequest]","MFT",sc)
 	}
 	Quit sc
 }
 
-/// TODO
-/// Make an Download style http request to Dropbox API
-Method MakeDownloadRequest(parameters As %String, request As %DynamicObject, body As %BinaryStream, Output response As %DynamicObject) As %Status
+/// Get the response object
+ClassMethod ProcessResponse(httpRequest As %Net.HttpRequest, json As %Stream.TmpCharacter, Output response As %DynamicObject) As %Status [ Final, Internal ]
 {
 	Try {
-		// Get a %Net.HttpRequest object if one is not yet associated with the connection.
-		If '$isobject(..HttpRequest) {
-			Set ..HttpRequest=##class(%Net.HttpRequest).%New()
-		}
-		Set httpRequest=..HttpRequest
-		
-		// Make sure to UTF-8 encode the JSON object
-		Do httpRequest.SetHeader("Dropbox-API-Arg",request.%ToJSON())
+		Set sc=$$$OK
+		Set response=""
 
-		// Make the request
-		Do body.Rewind()
-		Set httpRequest.ResponseStream=body
-		Set sc=..MakeHttpRequest(httpRequest,"POST",..ContentURL()_parameters)
-		If $$$ISERR(sc) Quit
-		
-		Set json=httpRequest.HttpResponse.GetHeader("Dropbox-API-Result")
-		Set sc=..GetJSONResponse(httpRequest,json,.response)
-		
+		// Handle success and error cases
+		Set statusCode=httpRequest.HttpResponse.StatusCode
+		Set:json.Size>0 response=##class(%DynamicAbstractObject).%FromJSON(json)
+		Set:$e(statusCode)'=2 sc=$$$ERROR($$$MFTErrorResponse, $$$FormatText("Error code: %1, error body: %2", statusCode, response.%ToJSON()))
+
 	} Catch ex {
-		Set sc=ex.AsStatus()
+		Set sc=$$$ADDSC($$$ERROR($$$MFTErrorResponse,"Exception"),ex.AsStatus())
 	}
 	
-	If $$$ISERR(sc) {
-		Do ##class(%OAuth2.Utils).LogError("[%SYS.MFT.Connection.Dropbox:MakeDownloadRequest]","MFT",sc)
-	}
 	Quit sc
 }
 
@@ -196,3 +296,4 @@ Storage Default
 }
 
 }
+

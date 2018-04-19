@@ -1,0 +1,2 @@
+%MFT.Yandex.cls
+%SYS.MFT.Connection.Yandex.cls
