@@ -15,7 +15,7 @@ ClassMethod Install(username As %String, clientId As %String, clientSecret As %S
  	
  	Do:'##class(Security.SSLConfigs).Exists(..#SSLConfig) ##class(Security.SSLConfigs).Create(..#SSLConfig)
 	
-	Set sys = ##class(%SYS.MFT.Connection.Yandex).%New()
+	Set sys = ##class(%SYS.MFT.Connection.Addons.Yandex).%New()
 	Set sys.Name = "Yandex"
 	Set sys.Service = "Addons.Yandex"
 	Set sys.ApplicationName = "Yandex"
@@ -23,7 +23,7 @@ ClassMethod Install(username As %String, clientId As %String, clientSecret As %S
 	Set sys.Username = username
 	Set sys.URL = ..#URL
 	
-	$$$QuitOnError(##class(%SYS.MFT.Connection.Yandex).CreateClient(sys.Name, ..#SSLConfig, clientId, clientSecret, ,host, port,,useSSL))
+	$$$QuitOnError(##class(%SYS.MFT.Connection.Addons.Yandex).CreateClient(sys.Name, ..#SSLConfig, clientId, clientSecret, ,host, port,,useSSL))
 	
 	Quit sys.%Save()
 }
