@@ -40,8 +40,9 @@ ClassMethod ConfigureProduction(yandexSource As %String, fileDestination As %Str
 	$$$QuitOnError(..ModifySetting(production, "EnsLib.File.PassthroughOperation", "FilePath", fileDestination))
 	$$$QuitOnError(..ModifySetting(production, "EnsLib.File.PassthroughService", "FilePath", fileSource))
 	$$$QuitOnError(..ModifySetting(production, "EnsLib.MFT.Operation.Passthrough", "DefaultMFTFolder", yandexDestination))
-	
-	Quit production.%Save()
+	$$$QuitOnError(production.%Save())
+	Write !, "Success!", !
+	Quit sc
 }
 
 ClassMethod ModifySetting(production As Ens.Config.Production = {..#Production}, itemName As %String, settingName As %String, value As %String) As %Status
