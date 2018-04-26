@@ -6,7 +6,7 @@ Additional services for MFT
 1. Регистрируемся на Yandex.
 2. [Создаём Yandex App](https://oauth.yandex.ru/client/new)
     - Выбираем платформу `Веб-сервисы`
-    - Прописываем Redirect URI: `http://Host:Port/csp/sys/oauth2/OAuth2.Response.cls` (https, если UseSSL = 1)
+    - Прописываем Redirect URI: `http://Host:Port/csp/sys/oauth2/OAuth2.Response.cls` (https, если UseSSL = 1, для разработки можно указать  `http://localhost:57772/csp/sys/oauth2/OAuth2.Response.cls`)
     - Даём все права на `Яндекс.Диск REST API`
     - Получаем `ID`, `Pass`
 3. Загружаем код, выполняем: `write $System.Status.GetErrorText(##class(MFT.Yandex).Install(Login, ID, Pass, Host, Port, UseSSL))`
