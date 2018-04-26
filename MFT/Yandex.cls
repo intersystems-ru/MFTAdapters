@@ -55,7 +55,6 @@ ClassMethod ModifySetting(production As Ens.Config.Production = {..#Production},
 	
 	#Dim setting As Ens.Config.Setting
 	Set setting = item.FindSettingByName(settingName)
-	Quit:$$$ISERR(sc) sc
 	
 	Set setting.Value = value
 	Quit item.%Save()
