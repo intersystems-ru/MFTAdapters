@@ -17,15 +17,15 @@ Additional services for MFT.
 3. Execute: `write $System.Status.GetErrorText(##class(MFT.Yandex).Install(Login, ID, Pass, Host, Port, UseSSL))`
     - Login - your Yandex email
     - Host, Port - same as callback
-    - UseSSL - use SSL fol callback? Your server need to support https
+    - UseSSL - use SSL for callback? Your server need to support https
 4. Open `http://Host:Port/csp/sys/sec/%25CSP.UI.Portal.MFT.ConnectionList.zen`
-5. Press `Get Access Token`, and complete authorization.
+5. Press `Get Access Token` and complete authorization.
 6. If everything went fine the Status would be Authorized.
 7. Execute: `write $System.Status.GetErrorText(##class(MFT.Yandex).ConfigureProduction(yandexSource, fileDestination, fileSource, yandexDestination))`
     - `yandexSource` и `fileDestination` - Yandex.Disk folder to download files from, they are stored in a local destination folder.
     - `fileSource` и `yandexDestination` - local folder from which files are uploaded to Yandex.Disk.
     - Important: Yandex.Disk folder names shold end with `/` (i.e. `out` ina  disk root would be `/out/`)
-8. Open production `MFT.Production` an start it. 
+8. Open production `MFT.Production` and start it. 
 9. Add file(s) to `yandexSource` and `fileSource` to see how it works.
 
 
