@@ -9,7 +9,7 @@ Additional services for MFT. [Community article](https://community.intersystems.
 # Yandex
 
 1. Register on Yandex.
-2. [Create Yandex App](https://oauth.yandex.ru/client/new)
+2. [Create Yandex App](https://oauth.yandex.ru/client/new).
     - Check `Веб-сервисы`
     - Set Redirect URI: `http://Host:Port/csp/sys/oauth2/OAuth2.Response.cls` (https, if UseSSL = 1, for development you can set it to `http://localhost:57772/csp/sys/oauth2/OAuth2.Response.cls`)
     - Give disk access `Яндекс.Диск REST API`
@@ -37,7 +37,7 @@ Additional services for MFT. [Community article](https://community.intersystems.
 # Yandex
 
 1. Зарегистрироваться на Yandex.
-2. [Создать Yandex App](https://oauth.yandex.ru/client/new)
+2. [Создать Yandex App](https://oauth.yandex.ru/client/new).
     - Выбирать платформу `Веб-сервисы`
     - Прописать Redirect URI: `http://Host:Port/csp/sys/oauth2/OAuth2.Response.cls` (https, если UseSSL = 1, для разработки можно указать  `http://localhost:57772/csp/sys/oauth2/OAuth2.Response.cls`)
     - Дать все права на `Яндекс.Диск REST API`
