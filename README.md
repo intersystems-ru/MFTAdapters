@@ -1,5 +1,5 @@
 # MFTAdapters
-Additional services for MFT.
+Additional services for MFT. [Community article](https://community.intersystems.com/post/adding-your-own-provider-mft).
 
 # Installation
 
