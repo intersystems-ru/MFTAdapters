@@ -18,7 +18,7 @@ Additional services for MFT
     - Host, Port - хост и порт коллбэка авторизации
     - UseSSL - использовать ли SSL для коллбэка
 5. Открываем `http://Host:Port/csp/sys/sec/%25CSP.UI.Portal.MFT.ConnectionList.zen`
-6. Наживаем `Get Access Token`, авторизуем приложение.
+6. Нажимаем `Get Access Token`, авторизуем приложение.
 7. Если всё хорошо, то Status будет Authorized.
 8. Выполнить: `write $System.Status.GetErrorText(##class(MFT.Yandex).ConfigureProduction(yandexSource, fileDestination, fileSource, yandexDestination))`
     - `yandexSource` и `fileDestination` - папка Яндекс.Диска из которой скачиваются файлы и локальная папка в которую они записываются  
