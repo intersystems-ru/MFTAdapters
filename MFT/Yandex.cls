@@ -8,7 +8,7 @@ Parameter URL = "https://cloud-api.yandex.net:443/v1/";
 Parameter Production = "MFT.Production";
 
 /// w $System.Status.GetErrorText(##class(MFT.Yandex).Install())
-ClassMethod Install(username As %String, clientId As %String, clientSecret As %String, host As %String = "localhost", port As %Integer = 57772, useSSL As %Boolean = 0)
+ClassMethod Install(username As %String, clientId As %String, clientSecret As %String, host As %String = "localhost", port As %Integer = {$get(^%SYS("WebServer","Port"), 57772)}, useSSL As %Boolean = {$$$NO})
 {
 	New $Namespace
 	Set $Namespace = "%SYS"	

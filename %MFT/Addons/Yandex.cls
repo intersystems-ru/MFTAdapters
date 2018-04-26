@@ -1,23 +1,23 @@
-Class %MFT.Yandex Extends %MFT.API
+Class %MFT.Addons.Yandex Extends %MFT.API
 {
 
 /// Get the form of id for a file or folder that is most efficient for subsequent calls.
 /// GetRequestId will return either an id of the form "id:<id>" or a full path depending on which is more efficient.
 /// This method is included to allow the id for future requests to be saved in the most efficient form.
-ClassMethod GetRequestId(connection As %SYS.MFT.Connection.Yandex, itemInfo As %MFT.ItemInfo) As %String
+ClassMethod GetRequestId(connection As %SYS.MFT.Connection.Addons.Yandex, itemInfo As %MFT.ItemInfo) As %String
 {
 	Quit itemInfo.GetPath()
 }
 
 /// Return the item info object which describes the specified folder.
 /// path may be a folder path.
-ClassMethod GetFolderInfo(connection As %SYS.MFT.Connection.Yandex, path As %String, Output itemInfo As %MFT.ItemInfo) As %Status
+ClassMethod GetFolderInfo(connection As %SYS.MFT.Connection.Addons.Yandex, path As %String, Output itemInfo As %MFT.ItemInfo) As %Status
 {
 	Try {
-		$$$SysLog(2,"MFT","[%MFT.Yandex:GetFolderInfo]","path="_path)
+		$$$SysLog(2,"MFT","[%MFT.Addons.Yandex:GetFolderInfo]","path="_path)
 
 		// Validate the connection
-		If connection.Service'=$piece($classname(),".",*) {
+		If connection.Service'=$piece($classname(),".",*-1,*) {
 			Set sc=$$$ERROR($$$MFTBadConnection)
 			Quit
 		}
@@ -32,7 +32,7 @@ ClassMethod GetFolderInfo(connection As %SYS.MFT.Connection.Yandex, path As %Str
 	}
 
 	If $$$ISERR(sc) {
-		Do ##class(%OAuth2.Utils).LogError("[%MFT.Yandex:GetFolderInfo]","MFT",sc)
+		Do ##class(%OAuth2.Utils).LogError("[%MFT.Addons.Yandex:GetFolderInfo]","MFT",sc)
 	}
 	Quit sc
 }
@@ -40,17 +40,17 @@ ClassMethod GetFolderInfo(connection As %SYS.MFT.Connection.Yandex, path As %Str
 /// Return the item info object which describes the specified file or folder.
 /// "" May be used as the itemPath to specify the current folder.<br>
 /// If an item does not exist at the specified path, then $$$OK is returned as status and itemInfo is returned as "".<br>
-ClassMethod GetItemInfo(connection As %SYS.MFT.Connection.Yandex, itemPath As %String, Output itemInfo As %MFT.ItemInfo) As %Status [ Internal ]
+ClassMethod GetItemInfo(connection As %SYS.MFT.Connection.Addons.Yandex, itemPath As %String, Output itemInfo As %MFT.ItemInfo) As %Status [ Internal ]
 {
 	Set sc=$$$OK
 	
 	Try {
-		$$$SysLog(2,"MFT","[%MFT.Yandex:GetItemInfo]","itemPath="_itemPath)
+		$$$SysLog(2,"MFT","[%MFT.Addons.Yandex:GetItemInfo]","itemPath="_itemPath)
 		Set itemInfo=""
 		Set folder=""
 		
 		// Validate the connection
-		If connection.Service'=$piece($classname(),".",*) {
+		If connection.Service'=$piece($classname(),".",*-1,*) {
 			Set sc=$$$ERROR($$$MFTBadConnection)
 			Quit
 		}
@@ -85,7 +85,7 @@ ClassMethod GetItemInfo(connection As %SYS.MFT.Connection.Yandex, itemPath As %S
 	}
 
 	If $$$ISERR(sc) {
-		Do ##class(%OAuth2.Utils).LogError("[%MFT.Yandex:GetItemInfo]","MFT",sc)
+		Do ##class(%OAuth2.Utils).LogError("[%MFT.Addons.Yandex:GetItemInfo]","MFT",sc)
 	}
 	Quit sc
 }
@@ -107,13 +107,13 @@ ClassMethod CreateItemInfo(response As %DynamicObject) As %MFT.ItemInfo [ Intern
 /// Return the item info object which describes the specified file.
 /// path may be a file path.
 /// If a file does not exist at the specified path, then $$$OK is returned as status and itemInfo is returned as "".
-ClassMethod GetFileInfo(connection As %SYS.MFT.Connection.Yandex, path As %String, Output itemInfo As %MFT.ItemInfo) As %Status
+ClassMethod GetFileInfo(connection As %SYS.MFT.Connection.Addons.Yandex, path As %String, Output itemInfo As %MFT.ItemInfo) As %Status
 {
 	Try {
-		$$$SysLog(2,"MFT","[%MFT.Yandex:GetFileInfo]","path="_path)
+		$$$SysLog(2,"MFT","[%MFT.Addons.Yandex:GetFileInfo]","path="_path)
 
 		// Validate the connection
-		If connection.Service'=$piece($classname(),".",*) {
+		If connection.Service'=$piece($classname(),".",*-1,*) {
 			Set sc=$$$ERROR($$$MFTBadConnection)
 			Quit
 		}
@@ -128,7 +128,7 @@ ClassMethod GetFileInfo(connection As %SYS.MFT.Connection.Yandex, path As %Strin
 	}
 
 	If $$$ISERR(sc) {
-		Do ##class(%OAuth2.Utils).LogError("[%MFT.Yandex:GetFileInfo]","MFT",sc)
+		Do ##class(%OAuth2.Utils).LogError("[%MFT.Addons.Yandex:GetFileInfo]","MFT",sc)
 	}
 	Quit sc
 }
@@ -136,14 +136,14 @@ ClassMethod GetFileInfo(connection As %SYS.MFT.Connection.Yandex, path As %Strin
 /// Creates the remote folder at the specified folderPath.
 /// Each level of the folder path should be created separately if it does not already exist.
 /// An %MFT.ItemInfo object is returned for the new folder.<br>
-ClassMethod CreateFolder(connection As %SYS.MFT.Connection.Yandex, folderPath As %String, Output itemInfo As %MFT.ItemInfo) As %Status
+ClassMethod CreateFolder(connection As %SYS.MFT.Connection.Addons.Yandex, folderPath As %String, Output itemInfo As %MFT.ItemInfo) As %Status
 {
 	Try {
-		$$$SysLog(2,"MFT","[%MFT.Yandex:CreateFolder]","folderPath="_folderPath)
+		$$$SysLog(2,"MFT","[%MFT.Addons.Yandex:CreateFolder]","folderPath="_folderPath)
 		Set itemInfo=""
 
 		// Validate the connection
-		If connection.Service'=$piece($classname(),".",*) {
+		If connection.Service'=$piece($classname(),".",*-1,*) {
 			Set sc=$$$ERROR($$$MFTBadConnection)
 			Quit
 		}
@@ -175,14 +175,14 @@ ClassMethod CreateFolder(connection As %SYS.MFT.Connection.Yandex, folderPath As
 	}
 
 	If $$$ISERR(sc) {
-		Do ##class(%OAuth2.Utils).LogError("[%MFT.Yandex:CreateFolder]","MFT",sc)
+		Do ##class(%OAuth2.Utils).LogError("[%MFT.Addons.Yandex:CreateFolder]","MFT",sc)
 	}
 	Quit sc
 }
 
 /// Delete the remote folder.
 /// path may be a folder path.
-ClassMethod DeleteFolder(connection As %SYS.MFT.Connection.Yandex, path As %String, permanent As %Boolean = 0) As %Status
+ClassMethod DeleteFolder(connection As %SYS.MFT.Connection.Addons.Yandex, path As %String, permanent As %Boolean = 0) As %Status
 {
 	Quit ..DeleteFile(connection, path, permanent)
 }
@@ -191,13 +191,13 @@ ClassMethod DeleteFolder(connection As %SYS.MFT.Connection.Yandex, path As %Stri
 /// path may be a file path.
 /// path may also be specified as an id of the form "id:<id>" which was obtained from a %MFT.ItemInfo object.<br>
 /// If permanent is true, then the file will be permanently deleted. Otherwise the file will be moved to trash.<br>
-ClassMethod DeleteFile(connection As %SYS.MFT.Connection.Yandex, path As %String, permanent As %Boolean = 0) As %Status
+ClassMethod DeleteFile(connection As %SYS.MFT.Connection.Addons.Yandex, path As %String, permanent As %Boolean = 0) As %Status
 {
 	Try {
-		$$$SysLog(2,"MFT","[%MFT.Yandex:DeleteFile]","path="_path)
+		$$$SysLog(2,"MFT","[%MFT.Addons.Yandex:DeleteFile]","path="_path)
 		
 		// Validate the connection
-		If connection.Service'=$piece($classname(),".",*) {
+		If connection.Service'=$piece($classname(),".",*-1,*) {
 			Set sc=$$$ERROR($$$MFTBadConnection)
 			Quit
 		}
@@ -215,20 +215,20 @@ ClassMethod DeleteFile(connection As %SYS.MFT.Connection.Yandex, path As %String
 	}
 
 	If $$$ISERR(sc) {
-		Do ##class(%OAuth2.Utils).LogError("[%MFT.Yandex:DeleteFile]","MFT",sc)
+		Do ##class(%OAuth2.Utils).LogError("[%MFT.Addons.Yandex:DeleteFile]","MFT",sc)
 	}
 	Quit sc
 }
 
 /// Get current user name
-ClassMethod GetUsername(connection As %SYS.MFT.Connection.Yandex, internalId As %String, Output username As %String) As %Status
+ClassMethod GetUsername(connection As %SYS.MFT.Connection.Addons.Yandex, internalId As %String, Output username As %String) As %Status
 {
 	Try {
-		$$$SysLog(2,"MFT","[%MFT.Yandex:GetUsername]","internalId="_internalId)
+		$$$SysLog(2,"MFT","[%MFT.Addons.Yandex:GetUsername]","internalId="_internalId)
 		Set username=""
 
 		// Validate the connection
-		If connection.Service'=$piece($classname(),".",*) {
+		If connection.Service'=$piece($classname(),".",*-1,*) {
 			Set sc=$$$ERROR($$$MFTBadConnection)
 			Quit
 		}
@@ -241,7 +241,7 @@ ClassMethod GetUsername(connection As %SYS.MFT.Connection.Yandex, internalId As 
 	}
 
 	If $$$ISERR(sc) {
-		Do ##class(%OAuth2.Utils).LogError("[%MFT.Yandex:GetUsername]","MFT",sc)
+		Do ##class(%OAuth2.Utils).LogError("[%MFT.Addons.Yandex:GetUsername]","MFT",sc)
 	}
 	Quit sc
 }
@@ -249,13 +249,13 @@ ClassMethod GetUsername(connection As %SYS.MFT.Connection.Yandex, internalId As 
 /// Share a folder with a list of users pass as a $list.
 /// path may be a folder path or a file. Share is for all.
 /// accessLevel and users properties are ignored. 
-ClassMethod ShareFolder(connection As %SYS.MFT.Connection.Yandex, path As %String, accessLevel As %String = "viewer", users As %List) As %Status
+ClassMethod ShareFolder(connection As %SYS.MFT.Connection.Addons.Yandex, path As %String, accessLevel As %String = "viewer", users As %List) As %Status
 {
 	Try {
-		$$$SysLog(2,"MFT","[%MFT.Yandex:ShareFolder]","path="_path_", accessLevel="_accessLevel_", users="_$listtostring(users))
+		$$$SysLog(2,"MFT","[%MFT.Addons.Yandex:ShareFolder]","path="_path_", accessLevel="_accessLevel_", users="_$listtostring(users))
 		
 		// Validate the connection
-		If connection.Service'=$piece($classname(),".",*) {
+		If connection.Service'=$piece($classname(),".",*-1,*) {
 			Set sc=$$$ERROR($$$MFTBadConnection)
 			Quit
 		}
@@ -267,14 +267,14 @@ ClassMethod ShareFolder(connection As %SYS.MFT.Connection.Yandex, path As %Strin
 	}
 
 	If $$$ISERR(sc) {
-		Do ##class(%OAuth2.Utils).LogError("[%MFT.Yandex:ShareFolder]","MFT",sc)
+		Do ##class(%OAuth2.Utils).LogError("[%MFT.Addons.Yandex:ShareFolder]","MFT",sc)
 	}
 	Quit sc
 }
 
 /// Unshare a folder from everyone, user is ignored
 /// 
-ClassMethod UnshareFolder(connection As %SYS.MFT.Connection.Yandex, path As %String, user As %String) As %Status
+ClassMethod UnshareFolder(connection As %SYS.MFT.Connection.Addons.Yandex, path As %String, user As %String) As %Status
 {
 	Quit ..UnshareFolderAll(connection, path)
 }
@@ -282,13 +282,13 @@ ClassMethod UnshareFolder(connection As %SYS.MFT.Connection.Yandex, path As %Str
 /// Unshare a folder from all users.
 /// path may be a folder path.
 /// path may also be specified as an id of the form "id:<id>" which was obtained from a %MFT.ItemInfo object.
-ClassMethod UnshareFolderAll(connection As %SYS.MFT.Connection.Yandex, path As %String) As %Status
+ClassMethod UnshareFolderAll(connection As %SYS.MFT.Connection.Addons.Yandex, path As %String) As %Status
 {
 	Try {
-		$$$SysLog(2,"MFT","[%MFT.Yandex:ShareFolder]","path="_path_", accessLevel="_accessLevel_", users="_$listtostring(users))
+		$$$SysLog(2,"MFT","[%MFT.Addons.Yandex:ShareFolder]","path="_path_", accessLevel="_accessLevel_", users="_$listtostring(users))
 		
 		// Validate the connection
-		If connection.Service'=$piece($classname(),".",*) {
+		If connection.Service'=$piece($classname(),".",*-1,*) {
 			Set sc=$$$ERROR($$$MFTBadConnection)
 			Quit
 		}
@@ -300,7 +300,7 @@ ClassMethod UnshareFolderAll(connection As %SYS.MFT.Connection.Yandex, path As %
 	}
 
 	If $$$ISERR(sc) {
-		Do ##class(%OAuth2.Utils).LogError("[%MFT.Yandex:ShareFolder]","MFT",sc)
+		Do ##class(%OAuth2.Utils).LogError("[%MFT.Addons.Yandex:ShareFolder]","MFT",sc)
 	}
 	Quit sc
 }
@@ -309,7 +309,7 @@ ClassMethod UnshareFolderAll(connection As %SYS.MFT.Connection.Yandex, path As %
 /// filePath must be a file path.  An id may not be specified.
 /// If replace is true, then an existing file of the same name will be replaced.  
 /// The default is to return an error if a replacement is attempted.
-ClassMethod UploadFile(connection As %SYS.MFT.Connection.Yandex, localFilePath As %String, filePath As %String, replace As %Boolean = 0, Output itemInfo As %MFT.ItemInfo) As %Status
+ClassMethod UploadFile(connection As %SYS.MFT.Connection.Addons.Yandex, localFilePath As %String, filePath As %String, replace As %Boolean = 0, Output itemInfo As %MFT.ItemInfo) As %Status
 {
 	Set stream=##class(%FileBinaryStream).%New()
 	Set stream.Filename=localFilePath
@@ -320,14 +320,14 @@ ClassMethod UploadFile(connection As %SYS.MFT.Connection.Yandex, localFilePath A
 /// filePath must be a file path.  An id may not be specified.
 /// If replace is true, then an existing file of the same name will be replaced.  
 /// The default is to return an error if a replacement is attempted.
-ClassMethod UploadStream(connection As %SYS.MFT.Connection.Yandex, stream As %BinaryStream, filePath As %String, replace As %Boolean = 0, Output itemInfo As %MFT.ItemInfo) As %Status
+ClassMethod UploadStream(connection As %SYS.MFT.Connection.Addons.Yandex, stream As %BinaryStream, filePath As %String, replace As %Boolean = 0, Output itemInfo As %MFT.ItemInfo) As %Status
 {
 	Try {
-		$$$SysLog(2,"MFT","[%MFT.Yandex:Upload]","filePath="_filePath)
+		$$$SysLog(2,"MFT","[%MFT.Addons.Yandex:Upload]","filePath="_filePath)
 		Set itemInfo=""
 
 		// Validate the connection
-		If connection.Service'=$piece($classname(),".",*) {
+		If connection.Service'=$piece($classname(),".",*-1,*) {
 			Set sc=$$$ERROR($$$MFTBadConnection)
 			Quit
 		}
@@ -362,14 +362,14 @@ ClassMethod UploadStream(connection As %SYS.MFT.Connection.Yandex, stream As %Bi
 	}
 
 	If $$$ISERR(sc) {
-		Do ##class(%OAuth2.Utils).LogError("[%MFT.Yandex:Upload]","MFT",sc)
+		Do ##class(%OAuth2.Utils).LogError("[%MFT.Addons.Yandex:Upload]","MFT",sc)
 	}
 	Quit sc
 }
 
 /// Download the specified remote file and store at the location given by localFilePath.
 /// filePath may be a file path.
-ClassMethod DownloadFile(connection As %SYS.MFT.Connection.Yandex, filePath As %String, localFilePath As %String) As %Status
+ClassMethod DownloadFile(connection As %SYS.MFT.Connection.Addons.Yandex, filePath As %String, localFilePath As %String) As %Status
 {
 	Set stream=##class(%FileBinaryStream).%New()
 	Set stream.Filename=localFilePath
@@ -379,14 +379,14 @@ ClassMethod DownloadFile(connection As %SYS.MFT.Connection.Yandex, filePath As %
 /// Download the specified remote file and store in the specified stream which must be a %FileBinaryStream or a %GlobalBinaryStream.
 /// If stream is not specified, then a %GlobalBinaryStream will be created.
 /// filePath may be a file path.
-ClassMethod DownloadStream(connection As %SYS.MFT.Connection.Yandex, filePath As %String, ByRef stream As %BinaryStream) As %Status
+ClassMethod DownloadStream(connection As %SYS.MFT.Connection.Addons.Yandex, filePath As %String, ByRef stream As %BinaryStream) As %Status
 {
 	Try {
-		$$$SysLog(2,"MFT","[%MFT.Yandex:Download]","filePath="_filePath)
+		$$$SysLog(2,"MFT","[%MFT.Addons.Yandex:Download]","filePath="_filePath)
 		Set itemInfo=""
 
 		// Validate the connection
-		If connection.Service'=$piece($classname(),".",*) {
+		If connection.Service'=$piece($classname(),".",*-1,*) {
 			Set sc=$$$ERROR($$$MFTBadConnection)
 			Quit
 		}
@@ -418,7 +418,7 @@ ClassMethod DownloadStream(connection As %SYS.MFT.Connection.Yandex, filePath As
 	}
 
 	If $$$ISERR(sc) {
-		Do ##class(%OAuth2.Utils).LogError("[%MFT.Yandex:Download]","MFT",sc)
+		Do ##class(%OAuth2.Utils).LogError("[%MFT.Addons.Yandex:Download]","MFT",sc)
 	}
 	Quit sc
 }
@@ -429,13 +429,13 @@ ClassMethod DownloadStream(connection As %SYS.MFT.Connection.Yandex, filePath As
 /// "" May be used as the folderPath to specify the current folder.
 /// The FolderContents object will include a list of %MFT.ItemInfo objects which contain a file or folder name
 /// and some additional simple information.
-ClassMethod GetFolderContents(connection As %SYS.MFT.Connection.Yandex, folderPath As %String, recursive As %Boolean = 0, Output folderContents As %MFT.FolderContents) As %Status
+ClassMethod GetFolderContents(connection As %SYS.MFT.Connection.Addons.Yandex, folderPath As %String, recursive As %Boolean = 0, Output folderContents As %MFT.FolderContents) As %Status
 {
 	Try {
-		$$$SysLog(2,"MFT","[%MFT.Yandex:GetFolderContents]","folderPath="_folderPath_", recursive="_recursive)
+		$$$SysLog(2,"MFT","[%MFT.Addons.Yandex:GetFolderContents]","folderPath="_folderPath_", recursive="_recursive)
 
 		// Validate the connection
-		If connection.Service'=$piece($classname(),".",*) {
+		If connection.Service'=$piece($classname(),".",*-1,*) {
 			Set sc=$$$ERROR($$$MFTBadConnection)
 			Quit
 		}
@@ -450,16 +450,16 @@ ClassMethod GetFolderContents(connection As %SYS.MFT.Connection.Yandex, folderPa
 	}
 
 	If $$$ISERR(sc) {
-		Do ##class(%OAuth2.Utils).LogError("[%MFT.Yandex:GetFolderContents]","MFT",sc)
+		Do ##class(%OAuth2.Utils).LogError("[%MFT.Addons.Yandex:GetFolderContents]","MFT",sc)
 	}
 	Quit sc
 }
 
 /// Internal method for recursing over subfolders to return the folder contents object for the specified folder.
-ClassMethod GetFolderContentsInternal(connection As %SYS.MFT.Connection.Yandex, path As %String, recursive As %Boolean = 0, folderContents As %MFT.FolderContents) As %Status [ Internal ]
+ClassMethod GetFolderContentsInternal(connection As %SYS.MFT.Connection.Addons.Yandex, path As %String, recursive As %Boolean = 0, folderContents As %MFT.FolderContents) As %Status [ Internal ]
 {
 	Try {
-		$$$SysLog(2,"MFT","[%MFT.Yandex:GetFolderContentsInternal]","path="_path_", recursive="_recursive)
+		$$$SysLog(2,"MFT","[%MFT.Addons.Yandex:GetFolderContentsInternal]","path="_path_", recursive="_recursive)
 
 
 		#Dim itemInfo As %MFT.ItemInfo
@@ -488,20 +488,20 @@ ClassMethod GetFolderContentsInternal(connection As %SYS.MFT.Connection.Yandex, 
 	}
 
 	If $$$ISERR(sc) {
-		Do ##class(%OAuth2.Utils).LogError("[%MFT.Yandex:GetFolderContentsInternal]","MFT",sc)
+		Do ##class(%OAuth2.Utils).LogError("[%MFT.Addons.Yandex:GetFolderContentsInternal]","MFT",sc)
 	}
 	Quit sc
 }
 
 /// Retrieve the %MFT.UserInfo for current user
-ClassMethod GetUser(connection As %SYS.MFT.Connection.Yandex, username As %String, Output userInfo As %MFT.UserInfo) As %Status
+ClassMethod GetUser(connection As %SYS.MFT.Connection.Addons.Yandex, username As %String, Output userInfo As %MFT.UserInfo) As %Status
 {
 	Try {
-		$$$SysLog(2,"MFT","[%MFT.Yandex:GetUser]","username="_username)
+		$$$SysLog(2,"MFT","[%MFT.Addons.Yandex:GetUser]","username="_username)
 		
 		Set userInfo = ""
 		// Validate the connection
-		If (connection.Service'=$piece($classname(),".",*)) {
+		If (connection.Service'=$piece($classname(),".",*-1,*)) {
 			Set sc=$$$ERROR($$$MFTBadConnection)
 			Quit
 		}
@@ -521,7 +521,7 @@ ClassMethod GetUser(connection As %SYS.MFT.Connection.Yandex, username As %Strin
 	}
 
 	If $$$ISERR(sc) {
-		Do ##class(%OAuth2.Utils).LogError("[%MFT.Yandex:GetUser]","MFT",sc)
+		Do ##class(%OAuth2.Utils).LogError("[%MFT.Addons.Yandex:GetUser]","MFT",sc)
 	}
 	Quit sc
 }
@@ -534,7 +534,7 @@ ClassMethod GetUserById(connection As %SYS.MFT.Connection.Base, userid As %Strin
 }
 
 /// Return the list of all currently defined users for this team or enterprise.
-ClassMethod GetUserList(connection As %SYS.MFT.Connection.Yandex, Output userList As %MFT.UserList) As %Status
+ClassMethod GetUserList(connection As %SYS.MFT.Connection.Addons.Yandex, Output userList As %MFT.UserList) As %Status
 {
 	Set sc = $$$OK
 	Set userList = ##class(%MFT.UserList).%New()
@@ -548,20 +548,20 @@ ClassMethod GetUserList(connection As %SYS.MFT.Connection.Yandex, Output userLis
 
 /// Create a new user.
 /// Unable to do it in Yandex
-ClassMethod CreateUser(connection As %SYS.MFT.Connection.Yandex, userInfo As %MFT.UserInfo) As %Status
+ClassMethod CreateUser(connection As %SYS.MFT.Connection.Addons.Yandex, userInfo As %MFT.UserInfo) As %Status
 {
 	Quit $$$ERROR($$$MFTBadConnection)
 }
 
 /// Delete new user.
 /// Unable to do it in Yandex
-ClassMethod DeleteUser(connection As %SYS.MFT.Connection.Yandex, username As %String) As %Status
+ClassMethod DeleteUser(connection As %SYS.MFT.Connection.Addons.Yandex, username As %String) As %Status
 {
 	Quit $$$ERROR($$$MFTBadConnection)
 }
 
 /// Delete the user that is specified by the id.
-ClassMethod DeleteUserById(connection As %SYS.MFT.Connection.Yandex, userid As %String) As %Status
+ClassMethod DeleteUserById(connection As %SYS.MFT.Connection.Addons.Yandex, userid As %String) As %Status
 {
 	Quit $$$ERROR($$$MFTBadConnection)
 }

@@ -1,4 +1,4 @@
-Class %SYS.MFT.Connection.Yandex Extends %SYS.MFT.Connection.Base
+Class %SYS.MFT.Connection.Addons.Yandex Extends %SYS.MFT.Connection.Base
 {
 
 /// Each subclass will define the DefaultURL method to supply the default URL for the service.

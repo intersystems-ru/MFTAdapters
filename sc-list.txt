@@ -1,4 +1,4 @@
-%MFT.Yandex.cls
-%SYS.MFT.Connection.Yandex.cls
+%MFT.Addons.pkg
+%SYS.MFT.Connection.Addons.pkg
 MFT.Production.cls
 MFT.Yandex.cls
