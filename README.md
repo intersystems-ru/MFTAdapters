@@ -19,7 +19,7 @@ Additional services for MFT.
     - Host, Port - same as callback
     - UseSSL - use SSL fol callback? Your server need to support https
 4. Open `http://Host:Port/csp/sys/sec/%25CSP.UI.Portal.MFT.ConnectionList.zen`
-5. Press `Get Access Token`, and complete autorization.
+5. Press `Get Access Token`, and complete authorization.
 6. If everything went fine the Status would be Authorized.
 7. Execute: `write $System.Status.GetErrorText(##class(MFT.Yandex).ConfigureProduction(yandexSource, fileDestination, fileSource, yandexDestination))`
     - `yandexSource` и `fileDestination` - Yandex.Disk folder to download files from, they are stored in a local destination folder.
