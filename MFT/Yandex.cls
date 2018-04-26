@@ -17,7 +17,7 @@ ClassMethod Install(username As %String, clientId As %String, clientSecret As %S
 	
 	Set sys = ##class(%SYS.MFT.Connection.Yandex).%New()
 	Set sys.Name = "Yandex"
-	Set sys.Service = "Yandex"
+	Set sys.Service = "Addons.Yandex"
 	Set sys.ApplicationName = "Yandex"
 	Set sys.SSLConfiguration = ..#SSLConfig
 	Set sys.Username = username
