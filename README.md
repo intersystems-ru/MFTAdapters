@@ -55,3 +55,7 @@ Additional services for MFT. [Community article](https://community.intersystems.
     - Важно: папки Яндкс.Диска должны заканчиваться на `/` (например папка `out` в корне диска будет `/out/`)
 8. Открыть продукцию `MFT.Production` и запустить её. 
 9. Добавить файл(ы) в `yandexSource` и `fileSource` для демонстрации работы.
+
+# Notes
+
+[Список OAuth приложений Яндекса](https://oauth.yandex.ru/).
